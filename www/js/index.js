@@ -65,7 +65,7 @@ function createNewToDo()
         else
         {
             // append the new to-do with the table
-            todoDictionary = { check : 0 , text : todo}; //this is where we store local permamenet data
+            todoDictionary = { check : 0 , text : todo, name : "", times : "1"}; //this is where we store local permamenet data
             addTableRow(todoDictionary, false); //this is defined below
         }
     }
@@ -102,8 +102,33 @@ function addTableRow(todoDictionary, appIsLoading)
     element2.setAttribute("onchange", "saveToDoList()");
     cell2.appendChild(element2);
  
+    // create the name textbox
+    var cell22 = row.insertCell(2);
+    var element22 = document.createElement("input");
+    element22.type = "text";
+    element22.name = "namebox[]";
+    element22.size = 16;
+    element22.id = "name" + rowID;
+    element22.placeholder = "Name";
+    element22.value = todoDictionary["name"];
+    element22.setAttribute("onchange", "saveToDoList()");
+    cell22.appendChild(element22);
+ 
+    // create the times per week textbox
+    var cell23 = row.insertCell(3);
+    var element23 = document.createElement("input");
+    element23.type = "number";
+    element23.name = "timesbox[]";
+    element23.size = 16;
+    element23.id = "times" + rowID;
+    element23.placeholder = "Times per week";
+    element23.value = todoDictionary["times"];
+    element23.min = 1;
+    element23.setAttribute("onchange", "saveToDoList()");
+    cell23.appendChild(element23);
+ 
     // create the view button
-    var cell3 = row.insertCell(2);
+    var cell3 = row.insertCell(4);
     var element3 = document.createElement("input");
     element3.type = "button";
     element3.id = rowID;
@@ -112,11 +137,11 @@ function addTableRow(todoDictionary, appIsLoading)
     cell3.appendChild(element3);
  
     // create the delete button
-    var cell4 = row.insertCell(3);
+    var cell4 = row.insertCell(5);
     var element4 = document.createElement("input");
     element4.type = "button";
-    element4.value = "Delete";
-    element4.setAttribute("onclick", "deleteSelectedRow(this)");
+    element4.value = "Completed";
+    element4.setAttribute("onclick", "completedTask(this)");
     cell4.appendChild(element4);
  
     // update the UI and save the to-do list
@@ -137,13 +162,19 @@ function checkboxClicked()
         var row = table.rows[i];
         var chkbox = row.cells[0].childNodes[0];
         var textbox = row.cells[1].childNodes[0];
+        var timesbox = row.cells[3].childNodes[0];
  
         // if the checkbox is checked, add the strike-through styling
         if(null != chkbox && true == chkbox.checked)
         {
             if(null != textbox)
-            {       
-                textbox.style.setProperty("text-decoration", "line-through");
+            {
+                if (timesbox.value > 1) {
+                    timesbox.value -= 1;
+                    chkbox.checked = false;
+                } else {
+                    textbox.style.setProperty("text-decoration", "line-through");
+                }
             }
         }
  
@@ -162,6 +193,13 @@ function checkboxClicked()
 function viewSelectedRow(todoTextField)
 {
     alert(todoTextField.value);
+}
+
+
+// completed task
+
+function completedTask(task) {
+    deleteSelectedRow(task);
 }
 // delete the selected row
 function deleteSelectedRow(deleteButton)
@@ -203,6 +241,7 @@ function saveToDoList()
     var todoArray = {};
     var checkBoxState = 0;
     var textValue = "";
+    var nameValue = "";
  
     var table = document.getElementById("dataTable");
     var rowCount = table.rows.length;
@@ -228,12 +267,18 @@ function saveToDoList()
             // retrieve the content of the to-do
             var textbox = row.cells[1].childNodes[0];
             textValue = textbox.value;
+            var namebox = row.cells[2].childNodes[0];
+            nameValue = namebox.value;
+            var timesbox = row.cells[3].childNodes[0];
+            timesValue = timesbox.value;
  
             // populate the array with checkbox state and text value
             todoArray["row" + i] =
             {
                 check : checkBoxState, //this formate is nescessary because we are going to turn it into a json key value pair
-                text : textValue
+                text : textValue,
+                name : nameValue,
+                times: timesValue
             };
         }
     }
